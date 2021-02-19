@@ -26,9 +26,9 @@ app.conf.task_queues = (
 )
 
 
-# 原始文件,词频统计
-@app.task(name='worker:origin_stat')
-def origin_stat(work_id: str):
+# 原始文件计算
+@app.task(name='worker:origin_calc')
+def origin_calc(work_id: str):
     _, db = OperateMongodb().conn_mongodb()
     rd = OperateRedis().conn_redis()
     data = db['work_history'].find_one({'id': work_id})
@@ -76,10 +76,26 @@ def origin_stat(work_id: str):
 
     u = UnitStat(word_pool)
     if data['work_type'] == 'stat':
-        o_result, tmp_text = u.run(origin.decode('utf-8'))
+        result, tmp_text = u.run(origin.decode('utf-8'))
         # notify request
-        notify_result(work_id=work_id, result = o_result, context=tmp_text, calc_type='origin')
+        notify_result(work_id=work_id, result = result, context=tmp_text, calc_type='origin')
     elif data['work_type'] == 'new':
         pass
+    else:
+        return
+
+# 分词后文件，计算
+@app.task(name='worker:parsed_calc')
+def parsed_calc(work_id: str):
+    _, db = OperateMongodb().conn_mongodb()
+    data = db['work_history'].find_one({'id': work_id})
+    if data['work_type'] == 'stat':
+        # todo 调用算法
+        result, tmp_text = [],''
+        notify_result(work_id=work_id, result=result, context=tmp_text, calc_type='parsed')
+    elif data['work_type'] == 'new':
+        # todo 调用算法
+        result, tmp_text = [], ''
+        notify_result(work_id=work_id, result=result, context=tmp_text, calc_type='parsed',is_save_to_dict=True)
     else:
         return
