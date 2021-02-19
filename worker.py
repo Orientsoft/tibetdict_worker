@@ -29,9 +29,6 @@ app.conf.task_queues = (
 # 原始文件,词频统计
 @app.task(name='worker:origin_stat')
 def origin_stat(work_id: str):
-    print(
-        work_id
-    )
     _, db = OperateMongodb().conn_mongodb()
     rd = OperateRedis().conn_redis()
     data = db['work_history'].find_one({'id': work_id})

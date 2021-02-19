@@ -1,0 +1,7 @@
+celery==4.4.7
+kombu==4.6.11
+minio==6.0.0
+requests==2.24.0
+redis
+pymongo
+
