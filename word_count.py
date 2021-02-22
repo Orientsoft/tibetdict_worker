@@ -164,10 +164,6 @@ class WordCount:
                     _id = uuid.uuid1().hex
                     # 将新词替换为id
                     upward = self.content[:word_index].split(split_out)[-2:]
-                    try:
-                        upward[1] = upward[1][:-len(data_content_list[x])] + '[' + _id + ']'
-                    except IndexError:
-                        upward[0] = upward[0][:-len(data_content_list[x])] + '[' + _id + ']'
                     downward = self.content[word_index:].split(split_out)[:2]
                     new_word.append({
                         'id': _id,
