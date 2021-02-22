@@ -122,7 +122,7 @@ class WordCount:
         except Exception as e:
             traceback.print_exc()
             print(e)
-            return None
+            return None, None
 
     def new_word(self, _id):
         '''
@@ -155,6 +155,7 @@ class WordCount:
             # new_word_list是用来排重的，因为new_word会是嵌套结构，判断是否重复比较复杂
             new_word_list = []
             word_index = 0
+            split_out = '།།' if '།།' in self.content else '།'
             # 每轮询一个元素，根据该元素长度，递增索引，取上下文时根据该索引截取原文，根据||分隔，从后往前取两个。后文取法同理
             for x in range(len(data_content_list)):
                 word_index += len(data_content_list[x])
@@ -162,13 +163,16 @@ class WordCount:
                 if data_content_list[x] not in data_word_stat_dict and data_content_list[x] not in new_word_list:
                     _id = uuid.uuid1().hex
                     # 将新词替换为id
-                    upward = self.content[:word_index].split('།།')[-2:]
-                    upward[1] = upward[1][:-len(data_content_list[x])] + '[' + _id + ']'
-                    downward = self.content[word_index:].split('།།')[:2]
+                    upward = self.content[:word_index].split(split_out)[-2:]
+                    try:
+                        upward[1] = upward[1][:-len(data_content_list[x])] + '[' + _id + ']'
+                    except IndexError:
+                        upward[0] = upward[0][:-len(data_content_list[x])] + '[' + _id + ']'
+                    downward = self.content[word_index:].split(split_out)[:2]
                     new_word.append({
                         'id': _id,
                         'word': data_content_list[x],
-                        'context': ' '.join(upward + downward)
+                        'context': split_out.join(upward + downward)
                     })
                     new_word_list.append(data_content_list[x])
             # 将新词从长到短排序，文章已经做过分词，所以不用考虑交叉匹配的错误
@@ -190,4 +194,4 @@ class WordCount:
         except Exception as e:
             traceback.print_exc()
             print(e)
-            return None
+            return None, None
