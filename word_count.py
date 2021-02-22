@@ -2,6 +2,7 @@ from collections import Counter
 from utils.minio_tools import MinioUploadPrivate
 import uuid
 import traceback
+import time
 
 
 class WordCountError(Exception):
@@ -15,6 +16,7 @@ class WordCount:
         self.conn = conn
         self.word_stat_in_content = None
         self.color_total = color_total
+        self.start_time = time.time()
         # self.time = time.time()
 
     def get_content(self, _id):
@@ -150,27 +152,25 @@ class WordCount:
                 data_word_stat_dict.append(x['word'])
             data_content_list = self.content.split(' ')
             new_word = []
+            # new_word_list是用来排重的，因为new_word会是嵌套结构，判断是否重复比较复杂
+            new_word_list = []
+            word_index = 0
+            # 每轮询一个元素，根据该元素长度，递增索引，取上下文时根据该索引截取原文，根据||分隔，从后往前取两个。后文取法同理
             for x in range(len(data_content_list)):
-                if data_content_list[x] not in data_word_stat_dict:
-                    # 若该词已经统计过，则不再重复统计
-                    for y in new_word:
-                        if data_content_list[x] == y['word']:
-                            continue
-                    upward = ''
-                    for y in range(x - 1, -1, -1):
-                        if '།' in data_content_list[y]:
-                            break
-                        upward = data_content_list[y] + ' ' + upward
-                    downward = ''
-                    for y in range(x + 1, len(data_content_list)):
-                        downward = downward + data_content_list[y]
-                        if '།' in data_content_list[y]:
-                            break
+                word_index += len(data_content_list[x])
+                # 该词为生词，并且若该词已经统计过，则不再重复统计
+                if data_content_list[x] not in data_word_stat_dict and data_content_list[x] not in new_word_list:
+                    _id = uuid.uuid1().hex
+                    # 将新词替换为id
+                    upward = self.content[:word_index].split('།།')[-2:]
+                    upward[1] = upward[1][:-len(data_content_list[x])] + '[' + _id + ']'
+                    downward = self.content[word_index:].split('།།')[:2]
                     new_word.append({
-                        'id': uuid.uuid1().hex,
+                        'id': _id,
                         'word': data_content_list[x],
-                        'context': upward + '"' + data_content_list[x] + '"' + downward
+                        'context': ' '.join(upward + downward)
                     })
+                    new_word_list.append(data_content_list[x])
             # 将新词从长到短排序，文章已经做过分词，所以不用考虑交叉匹配的错误
             new_word.sort(key=lambda x: len(x['word']), reverse=True)
             # 遍历new_word列表，依次replace
