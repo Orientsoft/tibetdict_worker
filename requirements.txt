@@ -4,4 +4,5 @@ minio==6.0.0
 requests==2.24.0
 redis
 pymongo
+loguru
 
