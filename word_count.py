@@ -167,7 +167,8 @@ class WordCount:
                     downward = self.content[word_index:].split(split_out)[:2]
                     context_list = upward
                     context_list[-1] = context_list[-1] + downward[0]
-                    context_list.append(downward[1])
+                    if len(downward) != 1:
+                        context_list.append(downward[1])
                     new_word.append({
                         'id': _id,
                         'word': data_content_list[x],
