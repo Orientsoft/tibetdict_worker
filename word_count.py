@@ -165,10 +165,13 @@ class WordCount:
                     # 将新词替换为id
                     upward = self.content[:word_index].split(split_out)[-2:]
                     downward = self.content[word_index:].split(split_out)[:2]
+                    context_list = upward
+                    context_list[-1] = context_list[-1] + downward[0]
+                    context_list = context_list + downward[1]
                     new_word.append({
                         'id': _id,
                         'word': data_content_list[x],
-                        'context': split_out.join(upward + downward)
+                        'context': split_out.join(context_list)
                     })
                     new_word_list.append(data_content_list[x])
             # 将新词从长到短排序，文章已经做过分词，所以不用考虑交叉匹配的错误
