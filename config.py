@@ -7,7 +7,7 @@ MINIO_URL = 'storage.mooplab.com'
 MINIO_ACCESS = 'moop'
 MINIO_SECRET = 'd2VsY29tZTEK'
 MINIO_SECURE = True
-MINIO_BUCKET = 'tibetdict'
+MINIO_BUCKET = 'tibetdictdev'
 
 NOTIFY_URL = "http://127.0.0.1:5555/api/work/notify"
 NOTIFY_KEY ="welcome1"
