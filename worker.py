@@ -37,7 +37,11 @@ def origin_calc(work_id: str):
     origin = m.get_object(data['origin'])
     cache = rd.get(WORD_POOL_KEY)
     if not cache:
-        word_pool = db['word_stat_dict'].find({'type': 'stat', 'is_exclude': False})
+        word_pool = db['word_stat_dict'].aggregate([{'$match': {'type': 'stat', 'is_exclude': False}},
+                                                    {'$project': {'_id': 0, 'id': 1, 'word': 1, 'nature': 1,
+                                                                  'length': {'$strLenCP': "$word"}}},
+                                                    {'$sort': {'length': -1}}
+                                                    ])
         result = []
 
         # 不参与排序
@@ -50,12 +54,8 @@ def origin_calc(work_id: str):
             _id = item['id']
 
             # 如果末尾不为་   , 末尾则加上་
-            _tt = _key.split('་')
-            _length = len(_tt) - 1
-
-            if _tt[-1] != '':
-                _length = _length + 1
-                _key = "%s་" % _key
+            if not _key.endswith('་'):
+                _key = f'{_key}་'
 
             if _key in _link:
                 _tmp_result.append({
@@ -81,7 +81,9 @@ def origin_calc(work_id: str):
         # notify request
         notify_result(work_id=work_id, result=result, context=tmp_text, calc_type='origin')
     elif data['work_type'] == 'new':
-        pass
+        result, tmp_text = u.run_new_word(origin.decode('utf-8'))
+        # notify request
+        notify_result(work_id=work_id, result=result, context=tmp_text, calc_type='origin')
     else:
         return
 

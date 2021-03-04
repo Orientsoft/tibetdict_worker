@@ -15,6 +15,7 @@ class UnitStat:
     flags_last_1 = [u'།', u'འི།', u'འུ།', u'འོ།', u'ས།', u'ར།']
     flags_last_2 = [u'འི', u'འུ', u'འོ', u'ས', u'ར']
     flags_last_3 = [u'འི', u'འུ', u'འོ']
+    not_new_word = ['་', '->་', '།', ' ', '']
     color_num = 6
 
     def __init__(self, word_pool: List):
@@ -168,7 +169,8 @@ class UnitStat:
 
         return _word_count_map.values(), result_text
 
-    def run(self, source: str):
+    # 预处理文件
+    def pre_deal(self, source: str):
         source = source.replace(' ', '')
         source = source.replace(u'༌', u'་')  # 肉眼不可见，显示一样，其实不一样
         _temp = []
@@ -177,6 +179,10 @@ class UnitStat:
             _temp.append(u"->་%s" % _line)
 
         source = '\n'.join(_temp)
+        return source
+
+    def run(self, source: str):
+        source = self.pre_deal(source)
 
         count_result, text_result = self.text_count(source)
         count_vals = []
@@ -193,44 +199,49 @@ class UnitStat:
         return list(count_result), text_result
 
     def run_new_word(self, source: str):
-        source = source.replace(' ', '')
-        source = source.replace(u'༌', u'་')  # 肉眼不可见，显示一样，其实不一样
-        _temp = []
-        tmp_list = source.splitlines()
-        for _line in tmp_list:
-            _temp.append(u"->་%s" % _line)
+        source = self.pre_deal(source)
 
-        source = '\n'.join(_temp)
         _begin_list, _begin_word, _word_in_pool = self.find_word(source)
-        print(_begin_list)
-        print(_begin_word)
+        # print(_begin_list)
+        # print(_begin_word)
 
         _string_buffer = []
         _start = 0
-        result = {}
+        result = []
         for pos in _begin_list:
             _word = _begin_word[pos]
             new_word = source[_start:pos]
-            if new_word in ['་', '->་', '།',' ','']:
+            if new_word in self.not_new_word:
                 _string_buffer.append(new_word)
             else:
                 _id = uuid.uuid1().hex
                 # 0:3 新词
                 _string_buffer.append(f'[{_id}]')
-                result[_id] = new_word
+                result.append({
+                    'id':_id,
+                    'word':new_word,
+                    'context':''
+                })
             _start = pos + len(_word)
             # 原有词
             _string_buffer.append(_word)
         # 末尾
         _end_content = source[_start:]
-        if _end_content:
+        if _end_content not in self.not_new_word:
             _id = uuid.uuid1().hex
             _string_buffer.append(f'[{_id}]')
-            result[_id] = _end_content
+            result.append({
+                'id': _id,
+                'word': _end_content,
+                'context': ''
+            })
+        else:
+            _string_buffer.append(_end_content)
 
         result_text = ''.join(_string_buffer)
+        result_text = result_text.replace(u"->་", "")
 
-        return result, result_text
+        return list(result), result_text
 
 
 if __name__ == '__main__':
@@ -240,12 +251,12 @@ if __name__ == '__main__':
     myclient = pymongo.MongoClient("mongodb://192.168.0.61:37017")
     mydb = myclient["tibetan"]
     start = time.time()
-    # word_pool = mydb['word_stat_dict'].aggregate([{'$match': {'type': 'stat', 'is_exclude': False}},
-    #                                               {'$project': {'_id': 0, 'id': 1, 'word': 1, 'nature': 1,
-    #                                                             'length': {'$strLenCP': "$word"}}},
-    #                                               {'$sort': {'length': -1}}
-    #                                               ])
-    word_pool = mydb['word_stat_dict'].find({'type': 'stat', 'is_exclude': False})
+    word_pool = mydb['word_stat_dict'].aggregate([{'$match': {'type': 'stat', 'is_exclude': False}},
+                                                  {'$project': {'_id': 0, 'id': 1, 'word': 1, 'nature': 1,
+                                                                'length': {'$strLenCP': "$word"}}},
+                                                  {'$sort': {'length': -1}}
+                                                  ])
+    # word_pool = mydb['word_stat_dict'].find({'type': 'stat', 'is_exclude': False})
     result = []
 
     # 不参与排序
@@ -258,12 +269,8 @@ if __name__ == '__main__':
         _id = item['id']
 
         # 如果末尾不为་   , 末尾则加上་
-        _tt = _key.split('་')
-        _length = len(_tt) - 1
-
-        if _tt[-1] != '':
-            _length = _length + 1
-            _key = "%s་" % _key
+        if not _key.endswith('་'):
+            _key = f'{_key}་'
 
         if _key in _link:
             _tmp_result.append({
