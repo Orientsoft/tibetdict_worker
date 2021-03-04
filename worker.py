@@ -36,9 +36,10 @@ def origin_calc(work_id: str):
     m = MinioUploadPrivate()
     origin = m.get_object(data['origin'])
     pool_key = WORD_POOL_KEY if data['work_type'] == 'stat' else NEW_WORD_POOL_KEY
+    _type = 'stat' if data['work_type'] == 'stat' else 'used'
     cache = rd.get(pool_key)
     if not cache:
-        word_pool = db['word_stat_dict'].aggregate([{'$match': {'type': data['work_type'], 'is_exclude': False}},
+        word_pool = db['word_stat_dict'].aggregate([{'$match': {'type': _type, 'is_exclude': False}},
                                                     {'$project': {'_id': 0, 'id': 1, 'word': 1, 'nature': 1,
                                                                   'length': {'$strLenCP': "$word"}}},
                                                     {'$sort': {'length': -1}}
