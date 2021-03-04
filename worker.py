@@ -83,7 +83,7 @@ def origin_calc(work_id: str):
     elif data['work_type'] == 'new':
         result, tmp_text = u.run_new_word(origin.decode('utf-8'))
         # notify request
-        notify_result(work_id=work_id, result=result, context=tmp_text, calc_type='origin')
+        notify_result(work_id=work_id, result=result, context=tmp_text, calc_type='origin', is_save_to_dict=True)
     else:
         return
 
