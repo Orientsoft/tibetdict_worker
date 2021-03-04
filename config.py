@@ -1,4 +1,5 @@
 WORD_POOL_KEY = 'word_pool_check'
+NEW_WORD_POOL_KEY = 'new_word_pool_check'
 BROKER_URL = 'redis://127.0.0.1:6379/0'
 RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
 ENABLE_UTC = True

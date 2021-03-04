@@ -2,7 +2,7 @@ from celery import Celery
 import json
 from celery.result import AsyncResult, allow_join_result
 from kombu import Queue
-from config import BROKER_URL, RESULT_BACKEND, ENABLE_UTC, WORD_POOL_KEY
+from config import BROKER_URL, RESULT_BACKEND, ENABLE_UTC, WORD_POOL_KEY, NEW_WORD_POOL_KEY
 
 from utils.operate_mongo import OperateMongodb
 from utils.operate_redis import OperateRedis
@@ -35,9 +35,10 @@ def origin_calc(work_id: str):
     data = db['work_history'].find_one({'id': work_id})
     m = MinioUploadPrivate()
     origin = m.get_object(data['origin'])
-    cache = rd.get(WORD_POOL_KEY)
+    pool_key = WORD_POOL_KEY if data['work_type'] == 'stat' else NEW_WORD_POOL_KEY
+    cache = rd.get(pool_key)
     if not cache:
-        word_pool = db['word_stat_dict'].aggregate([{'$match': {'type': 'stat', 'is_exclude': False}},
+        word_pool = db['word_stat_dict'].aggregate([{'$match': {'type': data['work_type'], 'is_exclude': False}},
                                                     {'$project': {'_id': 0, 'id': 1, 'word': 1, 'nature': 1,
                                                                   'length': {'$strLenCP': "$word"}}},
                                                     {'$sort': {'length': -1}}
@@ -71,7 +72,7 @@ def origin_calc(work_id: str):
                 })
         save_result = result + _tmp_result
         word_pool = save_result
-        rd.set(WORD_POOL_KEY, json.dumps(save_result, ensure_ascii=False), 3600)
+        rd.set(pool_key, json.dumps(save_result, ensure_ascii=False), 3600)
     else:
         word_pool = json.loads(cache)
 

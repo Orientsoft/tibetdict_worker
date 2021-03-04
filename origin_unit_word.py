@@ -208,35 +208,45 @@ class UnitStat:
         _string_buffer = []
         _start = 0
         result = []
+        result_word = {}
         for pos in _begin_list:
             _word = _begin_word[pos]
             new_word = source[_start:pos]
             if new_word in self.not_new_word:
                 _string_buffer.append(new_word)
-            else:
+            # new_word是新词，且未统计过
+            elif new_word not in result_word.keys():
                 _id = uuid.uuid1().hex
                 # 0:3 新词
                 _string_buffer.append(f'[{_id}]')
                 result.append({
-                    'id':_id,
-                    'word':new_word,
-                    'context':''
+                    'id': _id,
+                    'word': new_word,
+                    'context': ''
                 })
+                result_word[new_word] = _id
+            else:
+                _string_buffer.append(f'[{result_word[new_word]}]')
             _start = pos + len(_word)
             # 原有词
             _string_buffer.append(_word)
         # 末尾
         _end_content = source[_start:]
-        if _end_content not in self.not_new_word:
+        if _end_content in self.not_new_word:
+            _string_buffer.append(_end_content)
+        # new_word是新词，且未统计过
+        elif _end_content not in result_word.keys():
             _id = uuid.uuid1().hex
+            # 0:3 新词
             _string_buffer.append(f'[{_id}]')
             result.append({
                 'id': _id,
                 'word': _end_content,
                 'context': ''
             })
+            result_word[_end_content] = _id
         else:
-            _string_buffer.append(_end_content)
+            _string_buffer.append(f'[{result_word[_end_content]}]')
 
         result_text = ''.join(_string_buffer)
         result_text = result_text.replace(u"->་", "")
