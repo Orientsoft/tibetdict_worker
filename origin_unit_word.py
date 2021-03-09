@@ -216,7 +216,7 @@ class UnitStat:
             if new_word == '->་':
                 continue
             elif '->་' in new_word:
-                new_word.replace('->་', '')
+                new_word = new_word.replace(u'->་', '')
             if new_word in self.not_new_word:
                 _string_buffer.append(new_word)
             # new_word是新词，且未统计过
@@ -240,7 +240,7 @@ class UnitStat:
         if _end_content == '->་':
             pass
         elif '->་' in _end_content:
-            _end_content.replace('->་', '')
+            _end_content = _end_content.replace('->་', '')
         elif _end_content in self.not_new_word:
             _string_buffer.append(_end_content)
         # new_word是新词，且未统计过
