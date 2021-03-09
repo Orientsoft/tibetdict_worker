@@ -212,6 +212,9 @@ class UnitStat:
         for pos in _begin_list:
             _word = _begin_word[pos]
             new_word = source[_start:pos]
+            # TODO 所有不统计的特殊情况都可以在这里判断，_end_content同理
+            if new_word == '->་':
+                continue
             if new_word in self.not_new_word:
                 _string_buffer.append(new_word)
             # new_word是新词，且未统计过
@@ -232,7 +235,9 @@ class UnitStat:
             _string_buffer.append(_word)
         # 末尾
         _end_content = source[_start:]
-        if _end_content in self.not_new_word:
+        if _end_content == '->་':
+            pass
+        elif _end_content in self.not_new_word:
             _string_buffer.append(_end_content)
         # new_word是新词，且未统计过
         elif _end_content not in result_word.keys():
