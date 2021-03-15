@@ -8,7 +8,7 @@ from utils.operate_mongo import OperateMongodb
 from utils.operate_redis import OperateRedis
 from utils.minio_tools import MinioUploadPrivate
 from origin_unit_word import UnitStat
-from word_count import WordCount, WordCountError
+from new_word import new_word
 from notify import notify_result
 
 app = Celery()
@@ -83,29 +83,27 @@ def origin_calc(work_id: str):
         # notify request
         notify_result(work_id=work_id, result=result, context=tmp_text, calc_type='origin')
     elif data['work_type'] == 'new':
-        result, tmp_text = u.run_new_word(origin.decode('utf-8'))
+        result = new_word(db=db, source=origin.decode('utf-8'))
         # notify request
-        notify_result(work_id=work_id, result=result, context=tmp_text, calc_type='origin', is_save_to_dict=True)
+        notify_result(work_id=work_id, result=result, context='', calc_type='origin', is_save_to_dict=True)
     else:
         return
 
 
 # 分词后文件，计算
-@app.task(name='worker:parsed_calc')
-def parsed_calc(work_id: str):
-    _, db = OperateMongodb().conn_mongodb()
-    data = db['work_history'].find_one({'id': work_id})
-    try:
-        if data['work_type'] == 'stat':
-            # todo 调用算法
-            result, tmp_text = WordCount(conn=db).word_count(_id=work_id)
-            notify_result(work_id=work_id, result=result, context=tmp_text, calc_type='parsed')
-        elif data['work_type'] == 'new':
-            # todo 调用算法
-            result, tmp_text = WordCount(conn=db).new_word(_id=work_id)
-            notify_result(work_id=work_id, result=result, context=tmp_text, calc_type='parsed', is_save_to_dict=True)
-        else:
-            return
-    except WordCountError as e:
-        print(e.msg)
-        return
+# @app.task(name='worker:parsed_calc')
+# def parsed_calc(work_id: str):
+#     _, db = OperateMongodb().conn_mongodb()
+#     data = db['work_history'].find_one({'id': work_id})
+#     try:
+#         if data['work_type'] == 'stat':
+#             result, tmp_text = WordCount(conn=db).word_count(_id=work_id)
+#             notify_result(work_id=work_id, result=result, context=tmp_text, calc_type='parsed')
+#         elif data['work_type'] == 'new':
+#             result, tmp_text = WordCount(conn=db).new_word(_id=work_id)
+#             notify_result(work_id=work_id, result=result, context=tmp_text, calc_type='parsed', is_save_to_dict=True)
+#         else:
+#             return
+#     except WordCountError as e:
+#         print(e.msg)
+#         return
