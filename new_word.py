@@ -11,8 +11,10 @@ def new_word(db, source: str):
     for x in word_in_content:
         if x == '':
             continue
-        elif x[-1] == '།':
+        elif x[-1] == '།' and x[-2] != '་':
             word_list.append(x[:-1] + '་')
+        elif x[-1] == '།':
+            word_list.append(x[:-1])
         else:
             word_list.append(x)
     # 取差集
