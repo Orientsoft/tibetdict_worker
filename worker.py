@@ -31,54 +31,53 @@ app.conf.task_queues = (
 @app.task(name='worker:origin_calc')
 def origin_calc(work_id: str):
     _, db = OperateMongodb().conn_mongodb()
-    rd = OperateRedis().conn_redis()
     data = db['work_history'].find_one({'id': work_id})
     m = MinioUploadPrivate()
     origin = m.get_object(data['origin'])
-    pool_key = WORD_POOL_KEY if data['work_type'] == 'stat' else NEW_WORD_POOL_KEY
-    _type = 'stat' if data['work_type'] == 'stat' else 'used'
-    cache = rd.get(pool_key)
-    if not cache:
-        word_pool = db['word_stat_dict'].aggregate([{'$match': {'type': _type, 'is_exclude': False}},
-                                                    {'$project': {'_id': 0, 'id': 1, 'word': 1, 'nature': 1,
-                                                                  'length': {'$strLenCP': "$word"}}},
-                                                    {'$sort': {'length': -1}}
-                                                    ], {'allowDiskUse': True})
-        result = []
-
-        # 不参与排序
-        _link = ['འི་', 'འི།', 'འུ་', 'འུ།', 'འོ་', 'འོ།']
-        _tmp_result = []
-
-        for item in word_pool:
-            _key = item['word'].strip()
-            _value = item['nature'].strip()
-            _id = item['id']
-
-            # 如果末尾不为་   , 末尾则加上་
-            if not _key.endswith('་'):
-                _key = f'{_key}་'
-
-            if _key in _link:
-                _tmp_result.append({
-                    'id': _id,
-                    'word': _key,
-                    'nature': _value
-                })
-            else:
-                result.append({
-                    'id': _id,
-                    'word': _key,
-                    'nature': _value
-                })
-        save_result = result + _tmp_result
-        word_pool = save_result
-        rd.set(pool_key, json.dumps(save_result, ensure_ascii=False), 3600)
-    else:
-        word_pool = json.loads(cache)
-
-    u = UnitStat(word_pool)
     if data['work_type'] == 'stat':
+        rd = OperateRedis().conn_redis()
+        pool_key = WORD_POOL_KEY if data['work_type'] == 'stat' else NEW_WORD_POOL_KEY
+        _type = 'stat' if data['work_type'] == 'stat' else 'used'
+        cache = rd.get(pool_key)
+        if not cache:
+            word_pool = db['word_stat_dict'].aggregate([{'$match': {'type': _type, 'is_exclude': False}},
+                                                        {'$project': {'_id': 0, 'id': 1, 'word': 1, 'nature': 1,
+                                                                      'length': {'$strLenCP': "$word"}}},
+                                                        {'$sort': {'length': -1}}
+                                                        ], {'allowDiskUse': True})
+            result = []
+
+            # 不参与排序
+            _link = ['འི་', 'འི།', 'འུ་', 'འུ།', 'འོ་', 'འོ།']
+            _tmp_result = []
+
+            for item in word_pool:
+                _key = item['word'].strip()
+                _value = item['nature'].strip()
+                _id = item['id']
+
+                # 如果末尾不为་   , 末尾则加上་
+                if not _key.endswith('་'):
+                    _key = f'{_key}་'
+
+                if _key in _link:
+                    _tmp_result.append({
+                        'id': _id,
+                        'word': _key,
+                        'nature': _value
+                    })
+                else:
+                    result.append({
+                        'id': _id,
+                        'word': _key,
+                        'nature': _value
+                    })
+            save_result = result + _tmp_result
+            word_pool = save_result
+            rd.set(pool_key, json.dumps(save_result, ensure_ascii=False), 3600)
+        else:
+            word_pool = json.loads(cache)
+        u = UnitStat(word_pool)
         result, tmp_text = u.run(origin.decode('utf-8'))
         # notify request
         notify_result(work_id=work_id, result=result, context=tmp_text, calc_type='origin')
