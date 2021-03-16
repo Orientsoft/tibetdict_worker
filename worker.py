@@ -44,7 +44,7 @@ def origin_calc(work_id: str):
                                                         {'$project': {'_id': 0, 'id': 1, 'word': 1, 'nature': 1,
                                                                       'length': {'$strLenCP': "$word"}}},
                                                         {'$sort': {'length': -1}}
-                                                        ], {'allowDiskUse': True})
+                                                        ], allowDiskUse=True)
             result = []
 
             # 不参与排序
