@@ -42,7 +42,8 @@ def origin_calc(work_id: str):
         word_pool = db['word_stat_dict'].aggregate([{'$match': {'type': _type, 'is_exclude': False}},
                                                     {'$project': {'_id': 0, 'id': 1, 'word': 1, 'nature': 1,
                                                                   'length': {'$strLenCP': "$word"}}},
-                                                    {'$sort': {'length': -1}}
+                                                    {'$sort': {'length': -1}},
+                                                    {'allowDiskUse': True}
                                                     ])
         result = []
 
