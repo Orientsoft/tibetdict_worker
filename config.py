@@ -11,7 +11,7 @@ MINIO_SECURE = True
 MINIO_BUCKET = 'tibetdictdev'
 
 NOTIFY_URL = "http://127.0.0.1:5555/api/work/notify"
-NOTIFY_KEY ="welcome1"
+NOTIFY_KEY = "welcome1"
 
 REDIS_CONF = {  # 生产系统使用
     "HOST": "127.0.0.1",
@@ -32,3 +32,5 @@ MONGODB_CONF = {  # 生产系统使用
     "PASSWORD": "",
     "DEFAULT_DB": "tibetan"  # 默认数据库
 }
+
+DEL_CONTENT = ['-', '_', 'x', 'X', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',' ']

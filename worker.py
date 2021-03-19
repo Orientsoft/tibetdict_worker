@@ -2,7 +2,7 @@ from celery import Celery
 import json
 from celery.result import AsyncResult, allow_join_result
 from kombu import Queue
-from config import BROKER_URL, RESULT_BACKEND, ENABLE_UTC, WORD_POOL_KEY, NEW_WORD_POOL_KEY
+from config import BROKER_URL, RESULT_BACKEND, ENABLE_UTC, WORD_POOL_KEY, NEW_WORD_POOL_KEY,DEL_CONTENT
 
 from utils.operate_mongo import OperateMongodb
 from utils.operate_redis import OperateRedis
@@ -78,7 +78,7 @@ def origin_calc(work_id: str):
         else:
             word_pool = json.loads(cache)
         u = UnitStat(word_pool)
-        result, tmp_text = u.run(origin.decode('utf-8'))
+        result, tmp_text = u.run(origin.decode('utf-8'),DEL_CONTENT)
         # notify request
         notify_result(work_id=work_id, result=result, context=tmp_text, calc_type='origin')
     elif data['work_type'] == 'new':

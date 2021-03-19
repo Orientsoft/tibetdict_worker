@@ -170,8 +170,9 @@ class UnitStat:
         return _word_count_map.values(), result_text
 
     # 预处理文件
-    def pre_deal(self, source: str):
-        source = source.replace(' ', '')
+    def pre_deal(self, source: str, del_content: List):
+        for d in del_content:
+            source = source.replace(d, '')
         source = source.replace(u'༌', u'་')  # 肉眼不可见，显示一样，其实不一样
         _temp = []
         tmp_list = source.splitlines()
@@ -181,8 +182,8 @@ class UnitStat:
         source = '\n'.join(_temp)
         return source
 
-    def run(self, source: str):
-        source = self.pre_deal(source)
+    def run(self, source: str, del_content: List):
+        source = self.pre_deal(source, del_content)
 
         count_result, text_result = self.text_count(source)
         count_vals = []
@@ -198,8 +199,8 @@ class UnitStat:
         text_result = text_result.replace(u"->་", "")
         return list(count_result), text_result
 
-    def run_new_word(self, source: str):
-        source = self.pre_deal(source)
+    def run_new_word(self, source: str, del_content: List):
+        source = self.pre_deal(source, del_content)
 
         _begin_list, _begin_word, _word_in_pool = self.find_word(source)
         # print(_begin_list)
@@ -309,5 +310,4 @@ if __name__ == '__main__':
     u = UnitStat(word_pool=word_pool)
     source = '''བཅོམ་ལྡན་འདས་ ཀྱི་ ཡེ་ཤེས་ རྒྱས་པ འི་ མདོ་སྡེ་ རིན་པོ་ཆེ་ མཐའ་ཡས་པ་ མཐ ར་ ཕྱིན་པ་ ཞེས་ བྱ་བ་ ཐེག་པ་ ཆེན་པོ འི་ མདོ །123 བཅོམ་ལྡན་འདས་ ཀྱི་ ཡེ་ཤེས་ རྒྱས་པ འི་ མདོ་སྡེ་ རིན་པོ་ཆེ་ མཐའ་ཡས་པ་ མཐ ར་ ཕྱིན་པ་ ཞེས་ བྱ་བ་ ཐེག་པ་ ཆེན་པོ འི་ མདོ །456 བཅོམ་ལྡན་འདས་ ཀྱི་ ཡེ་ཤེས་ རྒྱས་པ འི་ མདོ་སྡེ་ རིན་པོ་ཆེ་ མཐའ་ཡས་པ་ མཐ ར་ ཕྱིན་པ་ ཞེས་ བྱ་བ་ ཐེག་པ་ ཆེན་པོ འི་ མདོ །
     '''
-    print(u.run_new_word(source))
     print(time.time() - start)
