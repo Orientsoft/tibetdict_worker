@@ -1,34 +1,43 @@
 import uuid
+from typing import List
 
 
-def new_word(db, source: str):
-    result = []
-    try:
-        word_dict_list = [x['word'] for x in db['word_stat_dict'].find({'type': 'stat'})]
-        for x in db['self_dict'].find({'is_check': True}):
-            word_dict_list.append(x['word'])
-        # \t、\n全部替换为空格，并将两个空格替换为1个，该替换方式无法完全避免多空格情况，所以在循环中要进行判断
+class NewWord:
+    def __init__(self, word_pool: List):
+        self.word_pool = word_pool
+
+    @staticmethod
+    def word_format(word):
+        if not word:
+            return ''
+        if word[-1] not in ['།', '་']:
+            return f'{word[:-1]}་'
+        else:
+            if word[-1] == '་':
+                return word
+            else:  # 以'།'结尾
+                if word[-2] == '་':
+                    return word[:-1]
+                else:
+                    return f'{word[:-1]}་'
+
+    def pre_deal(self, source, del_char: List = None):
         source = source.replace('\t', ' ').replace('\n', ' ').replace('\r', '').replace('  ', ' ')
+        # 人为加入的字符需去掉
+        for d in del_char:
+            source.replace(d, '')
         word_in_content = source.split(' ')
         word_in_content = word_in_content[2:]
-        word_list = []
-        for x in word_in_content:
-            if x == '':
-                continue
-            elif x[-1] == '།' and x[-2] != '་':
-                # print(x[:-1] + '་')
-                word_list.append(x[:-1] + '་')
-            elif x[-1] == '།':
-                # print(x[:-1])
-                word_list.append(x[:-1])
-            else:
-                word_list.append(x)
-        # 取差集
-        new_word_list = list(set(word_list).difference(set(word_dict_list)))
-        for x in new_word_list:
-            result.append({'word': x, 'id': uuid.uuid1().hex, 'is_check': False, 'context': ''})
-    except Exception as e:
-        print(e)
+        word_list = [self.word_format(x) for x in word_in_content]
+        return word_list
+
+    def run(self, source, del_char: List = None):
         result = []
-    finally:
+        # 取差集
+        result_word = self.pre_deal(source, del_char)
+        new_word_list = list(set(result_word).difference(set(self.word_pool)))
+        for x in new_word_list:
+            if not x:
+                continue
+            result.append({'word': x, 'id': uuid.uuid1().hex, 'is_check': False, 'context': ''})
         return result

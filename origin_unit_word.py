@@ -173,6 +173,7 @@ class UnitStat:
     def pre_deal(self, source: str, del_content: List):
         for d in del_content:
             source = source.replace(d, '')
+        source = source.replace(' ', '')
         source = source.replace(u'༌', u'་')  # 肉眼不可见，显示一样，其实不一样
         _temp = []
         tmp_list = source.splitlines()
