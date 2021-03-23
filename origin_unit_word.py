@@ -61,6 +61,7 @@ class UnitStat:
             word_index = item['id']
             # 词
             word = item['word'].strip()
+            # 藏语原因，去掉末尾的点
             word = word[:-1]
             # 词性
             nature = item['nature'].strip()
@@ -88,7 +89,7 @@ class UnitStat:
                         _last_flag_1 = text[_end:_check_end_1]
 
                         _check_begin = text[_begin - 1]
-
+                        # 如果该词的前部分是]等特殊，且后部分为特殊的几个词。则也计入词频
                         if (ord(_check_begin) in self.flags_head_byte) and (
                                 _last_flag_0 in self.flags_last_0 or _last_flag_1 in self.flags_last_1):
                             if _begin in _begin_word:
@@ -136,6 +137,7 @@ class UnitStat:
 
         _index = len(_begin_list) - 1
         _last = len(text) - 1
+        # 从末尾开始
         while _index >= 0:
             # 起始点
             _begin = _begin_list[_index]
@@ -311,4 +313,5 @@ if __name__ == '__main__':
     u = UnitStat(word_pool=word_pool)
     source = '''བཅོམ་ལྡན་འདས་ ཀྱི་ ཡེ་ཤེས་ རྒྱས་པ འི་ མདོ་སྡེ་ རིན་པོ་ཆེ་ མཐའ་ཡས་པ་ མཐ ར་ ཕྱིན་པ་ ཞེས་ བྱ་བ་ ཐེག་པ་ ཆེན་པོ འི་ མདོ །123 བཅོམ་ལྡན་འདས་ ཀྱི་ ཡེ་ཤེས་ རྒྱས་པ འི་ མདོ་སྡེ་ རིན་པོ་ཆེ་ མཐའ་ཡས་པ་ མཐ ར་ ཕྱིན་པ་ ཞེས་ བྱ་བ་ ཐེག་པ་ ཆེན་པོ འི་ མདོ །456 བཅོམ་ལྡན་འདས་ ཀྱི་ ཡེ་ཤེས་ རྒྱས་པ འི་ མདོ་སྡེ་ རིན་པོ་ཆེ་ མཐའ་ཡས་པ་ མཐ ར་ ཕྱིན་པ་ ཞེས་ བྱ་བ་ ཐེག་པ་ ཆེན་པོ འི་ མདོ །
     '''
+    u.run(source,[])
     print(time.time() - start)
