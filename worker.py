@@ -137,12 +137,12 @@ def origin_tokenize(file_id: str):
     # 直接修改数据，不走request，减少网络开销
     parsed_path = data['origin'].replace('origin', 'parsed', 1)
     tmp_text_bytes = tmp_text.encode('utf-8')
-    db['file'].update_one({'id': file_id}, {'$set': {'parsed': parsed_path, 'p_hash': contenttomd5(tmp_text_bytes),
-                                                     'updatedAt': datetime.datetime.now(
-                                                         tz=pytz.timezone('Asia/Shanghai')).isoformat()}})
+    db['file'].update_one({'id': file_id}, {
+        '$set': {'parsed': parsed_path, 'p_hash': contenttomd5(tmp_text_bytes), 'tokenize_status': '1',
+                 'updatedAt': datetime.datetime.now(
+                     tz=pytz.timezone('Asia/Shanghai')).isoformat()}})
     m.commit(tmp_text_bytes, parsed_path)
     return True
-
 
 # if __name__ == '__main__':
 #     origin_tokenize('995531d8870111ebaad5080027ce4314')
