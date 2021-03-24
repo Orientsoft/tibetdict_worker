@@ -11,6 +11,7 @@ COPY origin_unit_word.py ./
 COPY word_count.py ./
 COPY worker.py ./
 COPY new_word.py ./
+COPY word_tokenize.py ./
 COPY start.sh ./
 
 

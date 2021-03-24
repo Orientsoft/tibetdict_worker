@@ -176,7 +176,7 @@ class UnitStat:
         for d in del_content:
             source = source.replace(d, '')
         # 若空格前不是点或者竖，则该空格应该被替换为点
-        source = re.sub('([^།་])([ ])', r"\1་\2", source)
+        source = re.sub('([^།་ \\n])([ ])', r"\1་\2", source)
         source = source.replace(' ', '')
         source = source.replace(u'༌', u'་')  # 肉眼不可见，显示一样，其实不一样
         _temp = []

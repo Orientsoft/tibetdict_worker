@@ -2,13 +2,15 @@ from celery import Celery
 import json
 from celery.result import AsyncResult, allow_join_result
 from kombu import Queue
+import datetime, pytz
 from config import BROKER_URL, RESULT_BACKEND, ENABLE_UTC, WORD_POOL_KEY, NEW_WORD_POOL_KEY, DEL_CONTENT
-
+import hashlib
 from utils.operate_mongo import OperateMongodb
 from utils.operate_redis import OperateRedis
 from utils.minio_tools import MinioUploadPrivate
 from origin_unit_word import UnitStat
 from new_word import NewWord
+from word_tokenize import Tokenize
 from notify import notify_result
 
 app = Celery()
@@ -25,6 +27,12 @@ app.config_from_object(Config)
 app.conf.task_queues = (
     Queue('tibetan', routing_key='tibetan'),
 )
+
+
+def contenttomd5(origin: bytes):
+    md5 = hashlib.md5()
+    md5.update(origin)
+    return md5.hexdigest()
 
 
 def get_stat_pool(db):
@@ -92,7 +100,7 @@ def origin_calc(work_id: str):
     if data['work_type'] == 'stat':
         u = UnitStat(word_pool)
         result, tmp_text = u.run(origin.decode('utf-8'), DEL_CONTENT)
-        print(result,tmp_text)
+        print(result, tmp_text)
         # notify request
         notify_result(work_id=work_id, result=result, context=tmp_text, calc_type='origin')
     elif data['work_type'] == 'new':
@@ -107,5 +115,34 @@ def origin_calc(work_id: str):
         return
 
 
+# 文件分词
+@app.task(name='worker:origin_tokenize')
+def origin_tokenize(file_id: str):
+    _, db = OperateMongodb().conn_mongodb()
+    # 已校验文档不再处理
+    data = db['file'].find_one({'id': file_id, 'is_check': False})
+    if not data:
+        return False
+    m = MinioUploadPrivate()
+    origin = m.get_object(data['origin'])
+    rd = OperateRedis().conn_redis()
+    cache = rd.get(NEW_WORD_POOL_KEY)
+    if not cache:
+        word_pool = get_used_pool(db)
+        rd.set(NEW_WORD_POOL_KEY, json.dumps(word_pool, ensure_ascii=False), 3600 * 3600)
+    else:
+        word_pool = json.loads(cache)
+    u = Tokenize(word_pool)
+    tmp_text = u.run(origin.decode('utf-8'), DEL_CONTENT)
+    # 直接修改数据，不走request，减少网络开销
+    parsed_path = data['origin'].replace('origin', 'parsed', 1)
+    tmp_text_bytes = tmp_text.encode('utf-8')
+    db['file'].update_one({'id': file_id}, {'$set': {'parsed': parsed_path, 'p_hash': contenttomd5(tmp_text_bytes),
+                                                     'updatedAt': datetime.datetime.now(
+                                                         tz=pytz.timezone('Asia/Shanghai')).isoformat()}})
+    m.commit(tmp_text_bytes, parsed_path)
+    return True
+
+
 # if __name__ == '__main__':
-#     origin_calc('46c9f550870811eba1d9080027ce4314')
+#     origin_tokenize('995531d8870111ebaad5080027ce4314')
