@@ -94,7 +94,7 @@ def origin_calc(work_id: str):
         result, tmp_text = u.run(origin.decode('utf-8'), DEL_CONTENT)
         print(result,tmp_text)
         # notify request
-        # notify_result(work_id=work_id, result=result, context=tmp_text, calc_type='origin')
+        notify_result(work_id=work_id, result=result, context=tmp_text, calc_type='origin')
     elif data['work_type'] == 'new':
         n = NewWord(word_pool)
         try:
