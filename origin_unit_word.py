@@ -71,7 +71,7 @@ class UnitStat:
                 _begin = text.find(word, _offset)
 
                 if _begin > -1:
-                    _offset = _begin + 1
+                    _offset = _begin + len(word)
 
                     # 单个词
                     if word in self.flags_last_3:
@@ -99,7 +99,6 @@ class UnitStat:
                                 _word_in_pool[word] = [word_index, nature]
                 else:
                     break
-
         _begin_list = list(_begin_word.keys())  # set to list
         _begin_list.sort()
 
@@ -128,46 +127,29 @@ class UnitStat:
         return _begin_list, _begin_word, _word_in_pool
 
     def text_count(self, text: str):
+        start = time.time()
         _begin_list, _begin_word, _word_in_pool = self.find_word(text)
-
-        _word_count_map = {}  # {'some':{'word':'some','nature':'','count':1,''}}
-        _string_buffer = []
-
-        _index = len(_begin_list) - 1
-        _last = len(text) - 1
-        # 从末尾开始
-        while _index >= 0:
-            # 起始点
-            _begin = _begin_list[_index]
-            # 内容
-            _word = _begin_word[_begin]
-            # 结束点
-            _end = _begin + len(_word)
-            # 词性
-            _nature = _word_in_pool[_word][1]
-
-            _string_buffer.insert(0, text[_end:_last])
-            _string_buffer.insert(0, ']')
-            _string_buffer.insert(0, _word_in_pool[_word][0])
-            _string_buffer.insert(0, '[')
-
-            if _word in _word_count_map:
-                _count_row = _word_count_map[_word]
+        print('找词所花时间:', time.time() - start)
+        word_count_map = {}  # {'some':{'word':'some','nature':'','count':1,''}}
+        result_text = ''
+        start = 0
+        for pos in _begin_list:
+            word = _begin_word[pos]
+            word_id = _word_in_pool[word][0]
+            nature = _word_in_pool[word][1]
+            # 组装最终context
+            result_text = f"{result_text}{text[start:pos]}[{word_id}]"
+            start = pos + len(word)
+            # 计算词频
+            if word in word_count_map:
+                _count_row = word_count_map[word]
                 _count_row['count'] = _count_row['count'] + 1
             else:
-                _count_row = {'word': _word + u'་', 'nature': _nature, 'count': 1,
-                              'id': _word_in_pool[_word][0]}
+                _count_row = {'word': word + u'་', 'nature': nature, 'count': 1,
+                              'id': word_id}
 
-            _word_count_map[_word] = _count_row
-
-            _last = _begin
-
-            _index = _index - 1
-
-        _string_buffer.insert(0, text[:_last])
-        result_text = ''.join(_string_buffer)
-
-        return _word_count_map.values(), result_text
+            word_count_map[word] = _count_row
+        return word_count_map.values(), result_text
 
     # 预处理文件
     def pre_deal(self, source: str, del_content: List):
@@ -187,8 +169,9 @@ class UnitStat:
 
     def run(self, source: str, del_content: List):
         source = self.pre_deal(source, del_content)
-
+        start = time.time()
         count_result, text_result = self.text_count(source)
+        print('组装+找词:', time.time() - start)
         count_vals = []
         for i in count_result:
             count_vals.append(i['count'])
@@ -312,9 +295,11 @@ if __name__ == '__main__':
     print(time.time() - start)
     u = UnitStat(word_pool=word_pool)
 
-    # source = '''བཅོམ་ལྡན་འདས་ ཀྱི་ ཡེ་ཤེས་ རྒྱས་པ འི་ མདོ་སྡེ་ རིན་པོ་ཆེ་ མཐའ་ཡས་པ་ མཐ ར་ ཕྱིན་པ་ ཞེས་ བྱ་བ་ ཐེག་པ་ ཆེན་པོ འི་ མདོ །123 བཅོམ་ལྡན་འདས་ ཀྱི་ ཡེ་ཤེས་ རྒྱས་པ འི་ མདོ་སྡེ་ རིན་པོ་ཆེ་ མཐའ་ཡས་པ་ མཐ ར་ ཕྱིན་པ་ ཞེས་ བྱ་བ་ ཐེག་པ་ ཆེན་པོ འི་ མདོ །456 བཅོམ་ལྡན་འདས་ ཀྱི་ ཡེ་ཤེས་ རྒྱས་པ འི་ མདོ་སྡེ་ རིན་པོ་ཆེ་ མཐའ་ཡས་པ་ མཐ ར་ ཕྱིན་པ་ ཞེས་ བྱ་བ་ ཐེག་པ་ ཆེན་པོ འི་ མདོ །
-    # '''
-    with open('./test.txt','r') as f:
-        source = f.read()
-    print(u.run(source,[]))
+    source = '''
+    བཅོམ་ལྡན་འདས་ཀྱི་ཡེ་ཤེས་རྒྱས་པའི་མདོ་སྡེ་རིན་པོ་ཆེ་མཐའ་ཡས་པ་མཐར་ཕྱིན་པ་ཞེས་བྱ་བ་ཐེག་པ་ཆེན་པོའི་མདོ། [151a][151a.1]ཞིག་གོང་ན་ཞི་བ་ཉིད་དང་། གྱ་ནོམ་པ་ཉིད་ཡོད་དོ་སྙམ་ནས་དེས་བསམས་ཏེ་ རྟོག་པ་མེད་པའི་བསམ་གཏན་ཐོབ་ནས་དེ་འདི་སྙམ་དུ་གྱུར་ཏེ། གང་རྟོག་པ་དང་དཔྱོད་པ་དག་མི་འབྱུང་བ་འདི་ནི། མྱ་ངན་ལས་འདས་པ་ཡིན་ཏེ། འདི་ནི་ཞི་བའོ། །འདི་ནི་གྱ་ནོམ་པའོ། །གང་རྟོག་པ་དང་དཔྱོད་[151a.2]པ་དག་མེད་པ་དེ་ཡང་དང་ཡང་དུ་སྐྱེ་བར་མི་འཇུག་ལ་ཉེ་བར་ལེན་པ་ཅུང་ཟད་ཀྱང་མེད་དེ་འདི་ནི་ཕུང་པོ་ལྷག་མ་མེད་པའི་དབྱིངས་སུ་མྱ་ངན་ལས་འདའོ་སྙམ་ནས་དེ་ཏིང་ངེ་འཛིན་དེ་ལས་ལངས་ནས། སྲོག་ཆགས་འབུམ་ཕྲག་དྲུག་བཟོད་པ་འདི་ལ་བཙུད་དོ། །དེ་དག་ཀྱང་འདི་སྙམ་དུ་གྱུར་ཏེ།  རྟོག་པ་དང་[151a.3]དཔྱོད་པ་འདི་དག་སྤངས་ན་དེའི་སྐྱེ་བ་མི་འཇུག་སྟེ་དེ་ཡང་དང་ཡང་དུ་སྐྱེ་བ་མི་འཇུག་པ་འདི་ནི་མྱ་ངན་ལས་འདའ་བ་ཐོབ་བོ་སྙམ་མོ། །དེ་ལྟར་བཟོད་པ་དང་སྣང་བ་ལ་དགའ་བ་དེ་དག་ལ་འོད་གསལ་གྱི་གཞལ་མེད་ཁང་དག་བྱུང་བར་གྱུར་ཏོ། །དེ་ལྟར་གཞལ་མེད་ཁང་དེ་དག་མཐོང་ནས་འདི་སྙམ་[151a.4]དུ་གྱུར་ཏེ།  ༢།Toh.4420Aབརྡ་སྤྲོད་པ་པཱ་ཎི་ནིའི་འགྲེལ་པ་རབ་ཏུ་བྱ་བ་ཤིན་ཏུ་རྒྱས་པ་ཞེས་བྱ་བ།སྣ་ཚོགས།ཏོ༢༧།བ[DD]༄༅༅།།ཨོཾ་སྭསྟི་པྲ་ཛཱ་བྷྱཿ།བླ་མ་དང་མགོན་པོ་འཇམ་པའི་དབྱངས་ལ་སྒོ་གསུམ་གུས་པས་ཕྱག་འཚལ་ལོ།།འི
+    '''
+    print(u.run(source, []))
+    # with open('./test.txt','r') as f:
+    #     source = f.read()
+    # u.run(source, [])
     print(time.time() - start)
