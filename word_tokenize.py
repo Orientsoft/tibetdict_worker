@@ -110,11 +110,7 @@ class Tokenize:
             # 结束点
             _end = _begin + len(_word)
             # 词性
-
-            _string_buffer.insert(0, text[_end:_last])
-            _string_buffer.insert(0, ' ')
-            _string_buffer.insert(0, _word)
-            _string_buffer.insert(0, ' ')
+            _string_buffer.insert(0,f" {_word} {text[_end:_last]}")
 
             _last = _begin
 

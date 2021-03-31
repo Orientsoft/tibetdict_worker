@@ -128,8 +128,9 @@ class UnitStat:
         return _begin_list, _begin_word, _word_in_pool
 
     def text_count(self, text: str):
+        start = time.time()
         _begin_list, _begin_word, _word_in_pool = self.find_word(text)
-
+        print("找词所花时间：",time.time()-start)
         _word_count_map = {}  # {'some':{'word':'some','nature':'','count':1,''}}
         _string_buffer = []
 
@@ -145,11 +146,8 @@ class UnitStat:
             _end = _begin + len(_word)
             # 词性
             _nature = _word_in_pool[_word][1]
-
-            _string_buffer.insert(0, text[_end:_last])
-            _string_buffer.insert(0, ']')
-            _string_buffer.insert(0, _word_in_pool[_word][0])
-            _string_buffer.insert(0, '[')
+            # 不能用字符串相加，随着字符串变长，会越来越慢
+            _string_buffer.insert(0,f"[{_word_in_pool[_word][0]}]{text[_end:_last]}")
 
             if _word in _word_count_map:
                 _count_row = _word_count_map[_word]
@@ -166,6 +164,7 @@ class UnitStat:
 
         _string_buffer.insert(0, text[:_last])
         result_text = ''.join(_string_buffer)
+        print("组装结束所花时间：",time.time()-start)
 
         return _word_count_map.values(), result_text
 
@@ -312,9 +311,9 @@ if __name__ == '__main__':
     print(time.time() - start)
     u = UnitStat(word_pool=word_pool)
 
-    # source = '''བཅོམ་ལྡན་འདས་ ཀྱི་ ཡེ་ཤེས་ རྒྱས་པ འི་ མདོ་སྡེ་ རིན་པོ་ཆེ་ མཐའ་ཡས་པ་ མཐ ར་ ཕྱིན་པ་ ཞེས་ བྱ་བ་ ཐེག་པ་ ཆེན་པོ འི་ མདོ །123 བཅོམ་ལྡན་འདས་ ཀྱི་ ཡེ་ཤེས་ རྒྱས་པ འི་ མདོ་སྡེ་ རིན་པོ་ཆེ་ མཐའ་ཡས་པ་ མཐ ར་ ཕྱིན་པ་ ཞེས་ བྱ་བ་ ཐེག་པ་ ཆེན་པོ འི་ མདོ །456 བཅོམ་ལྡན་འདས་ ཀྱི་ ཡེ་ཤེས་ རྒྱས་པ འི་ མདོ་སྡེ་ རིན་པོ་ཆེ་ མཐའ་ཡས་པ་ མཐ ར་ ཕྱིན་པ་ ཞེས་ བྱ་བ་ ཐེག་པ་ ཆེན་པོ འི་ མདོ །
-    # '''
-    with open('./test.txt','r') as f:
-        source = f.read()
+    source = '''བཅོམ་ལྡན་འདས་ ཀྱི་ ཡེ་ཤེས་ རྒྱས་པ འི་ མདོ་སྡེ་ རིན་པོ་ཆེ་ མཐའ་ཡས་པ་ མཐ ར་ ཕྱིན་པ་ ཞེས་ བྱ་བ་ ཐེག་པ་ ཆེན་པོ འི་ མདོ །123 བཅོམ་ལྡན་འདས་ ཀྱི་ ཡེ་ཤེས་ རྒྱས་པ འི་ མདོ་སྡེ་ རིན་པོ་ཆེ་ མཐའ་ཡས་པ་ མཐ ར་ ཕྱིན་པ་ ཞེས་ བྱ་བ་ ཐེག་པ་ ཆེན་པོ འི་ མདོ །456 བཅོམ་ལྡན་འདས་ ཀྱི་ ཡེ་ཤེས་ རྒྱས་པ འི་ མདོ་སྡེ་ རིན་པོ་ཆེ་ མཐའ་ཡས་པ་ མཐ ར་ ཕྱིན་པ་ ཞེས་ བྱ་བ་ ཐེག་པ་ ཆེན་པོ འི་ མདོ །
+    '''
+    # with open('./test.txt','r') as f:
+    #     source = f.read()
     print(u.run(source,[]))
     print(time.time() - start)

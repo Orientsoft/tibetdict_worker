@@ -6,13 +6,11 @@ RUN pip install -r /requirements.txt -i http://mirrors.aliyun.com/pypi/simple/ -
 
 WORKDIR /workshop
 COPY utils ./utils
+COPY new_word.py ./
 COPY notify.py ./
 COPY origin_unit_word.py ./
-COPY word_count.py ./
-COPY worker.py ./
-COPY new_word.py ./
-COPY word_tokenize.py ./
 COPY start.sh ./
-
+COPY word_tokenize.py ./
+COPY worker.py ./
 
 ENTRYPOINT [ "./start.sh" ]
