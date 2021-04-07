@@ -5,7 +5,7 @@ import re
 
 
 class Tokenize:
-    flags_head = [' ', ']', u']', u'་', u'།']
+    flags_head = [' ', ']', u']', u'་', u'།',u'.']
     flags_head_byte = [160]
 
     flags_last_0 = [u'་', u'འི་', u'འུ་', u'འོ་', u'ས་', u'ར་']

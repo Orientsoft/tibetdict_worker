@@ -117,7 +117,7 @@ def origin_calc(work_id: str):
 
 # 文件分词
 @app.task(name='worker:origin_tokenize')
-def origin_tokenize(file_id: str):
+def origin_tokenize(file_id: str, user_id: str):
     _, db = OperateMongodb().conn_mongodb()
     # 已校验文档不再处理
     data = db['file'].find_one({'id': file_id, 'is_check': False})
@@ -139,6 +139,7 @@ def origin_tokenize(file_id: str):
     tmp_text_bytes = tmp_text.encode('utf-8')
     db['file'].update_one({'id': file_id}, {
         '$set': {'parsed': parsed_path, 'p_hash': contenttomd5(tmp_text_bytes), 'tokenize_status': '1',
+                 'tokenize_user': user_id,
                  'updatedAt': datetime.datetime.now(
                      tz=pytz.timezone('Asia/Shanghai')).isoformat()}})
     m.commit(tmp_text_bytes, parsed_path)
