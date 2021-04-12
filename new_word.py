@@ -13,10 +13,10 @@ class NewWord:
         if word[-1] not in ['།', '་']:
             return f'{word[:-1]}་'
         else:
-            if word[-1] == '་':
+            if word.endswith('་'):
                 return word
             else:  # 以'།'结尾
-                if word[-2] == '་':
+                if word[:-1].endswith('་'):
                     return word[:-1]
                 else:
                     return f'{word[:-1]}་'

@@ -86,8 +86,12 @@ def get_used_pool(db):
 def origin_calc(work_id: str):
     _, db = OperateMongodb().conn_mongodb()
     data = db['work_history'].find_one({'id': work_id})
+    db_file = db['file'].find_one({'id':data['file_id']})
     m = MinioUploadPrivate()
-    origin = m.get_object(data['origin'])
+    if db_file['parsed'] and db_file['is_check'] and data['work_type'] == 'new':
+        origin = m.get_object(db_file['parsed'])
+    else:
+        origin = m.get_object(data['origin'])
     pool_key = WORD_POOL_KEY if data['work_type'] == 'stat' else NEW_WORD_POOL_KEY
     rd = OperateRedis().conn_redis()
     cache = rd.get(pool_key)
@@ -107,7 +111,8 @@ def origin_calc(work_id: str):
         n = NewWord(word_pool)
         try:
             result = n.run(origin.decode('utf-8'), DEL_CONTENT)
-        except:
+        except Exception as e:
+            # print(e)
             result = []
         # notify request
         notify_result(work_id=work_id, result=result, context='', calc_type='origin', is_save_to_dict=True)
@@ -146,4 +151,4 @@ def origin_tokenize(file_id: str, user_id: str):
     return True
 
 # if __name__ == '__main__':
-#     origin_tokenize('995531d8870111ebaad5080027ce4314')
+#     origin_calc('5a1110489b5911ebad25080027ce4314')
