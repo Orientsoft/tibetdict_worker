@@ -78,6 +78,7 @@ def get_used_pool(db):
     # 加入已经确认的新词
     for x in db['self_dict'].find({'is_check': True}):
         word_dict_list.append(x['word'])
+    word_dict_list.sort(key=lambda i: len(i), reverse=True)
     return word_dict_list
 
 
@@ -86,7 +87,7 @@ def get_used_pool(db):
 def origin_calc(work_id: str):
     _, db = OperateMongodb().conn_mongodb()
     data = db['work_history'].find_one({'id': work_id})
-    db_file = db['file'].find_one({'id':data['file_id']})
+    db_file = db['file'].find_one({'id': data['file_id']})
     m = MinioUploadPrivate()
     if db_file['parsed'] and db_file['is_check'] and data['work_type'] == 'new':
         origin = m.get_object(db_file['parsed'])
@@ -151,4 +152,4 @@ def origin_tokenize(file_id: str, user_id: str):
     return True
 
 # if __name__ == '__main__':
-#     origin_calc('5a1110489b5911ebad25080027ce4314')
+#     origin_tokenize('995531d8870111ebaad5080027ce4314','11c6a7fa856811eb8076080027ce4314')

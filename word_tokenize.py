@@ -142,12 +142,15 @@ class Tokenize:
         text_result = self.text_count(source)
         # 1.结果将(空格་) 替换为་空格
         text_result = text_result.replace(u" ་", "་ ")
+        # 特殊字符处理
+        for i in ['།།','།','༑','[','༼','༽',']']:
+            text_result = text_result.replace(i,f' {i} ')
         # 2.结果将多空格替换为单空格
         text_result = re.sub(' +', ' ', text_result)
-        # 3.若空格前不是点则加入@
-        text_result = re.sub('([^།་])([ ])', r"\1@\2", text_result)
-        # 4.处理掉"@空格"
-        text_result = text_result.replace(u"@ ", "")
+        # # 3.若空格前不是点则加入@
+        # text_result = re.sub('([^།་])([ ])', r"\1@\2", text_result)
+        # # 4.处理掉"@空格"
+        # text_result = text_result.replace(u"@ ", "")
         return text_result
 
 
@@ -162,9 +165,10 @@ if __name__ == '__main__':
     # 加入已经确认的新词
     for x in db['self_dict'].find({'is_check': True}):
         word_pool.append(x['word'])
+    word_pool.sort(key=lambda i: len(i), reverse=True)
     u = Tokenize(word_pool=word_pool)
     source = '''
-    རྫུ་འཕྲུལ་ལྡན་ པའི་ མཐུ་ ལ་ ལྟོས། དེ་ནས་ བཅོམ་ལྡན་p621ln1འདས་ ཀྱིས་ གཙུག་ལག་ཁང་ གི་ ཕྱི་རོལ་ དུ་ ཞབས་ གཉིས་བཀྲུས་ ཏེ།
+    ཡུལ་སྐད། ཡིག་སྐད། འགྱོ། འགྲོ། འདེ། འདི་རེད། དུ་རེ། དེ་རེད། ཧོས་ན། ཕ་རོལ།
     '''
     # with open('./test.txt','r') as f:
     #     source = f.read()
