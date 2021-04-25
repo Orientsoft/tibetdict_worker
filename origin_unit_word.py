@@ -86,7 +86,7 @@ class UnitStat:
                         _last_flag_0 = text[_end:_check_end_0]
                         _last_flag_1 = text[_end:_check_end_1]
 
-                        _check_begin = text[_begin - 1]
+                        _check_begin = text[_begin - 1]  if _begin > 0 else ' '
                         # 如果该词的前部分是]等特殊，且后部分为特殊的几个词。则也计入词频
                         if (ord(_check_begin) in self.flags_head_byte) and (
                                 _last_flag_0 in self.flags_last_0 or _last_flag_1 in self.flags_last_1):
