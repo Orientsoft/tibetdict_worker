@@ -123,6 +123,7 @@ class Tokenize:
 
     # 预处理文件
     def pre_deal(self, source: str, del_content: List):
+        source = source.replace('\n', '').replace('\r', '')
         for d in del_content:
             source = source.replace(d, '')
         # 若空格前不是点或者竖，则该空格应该被替换为点
@@ -158,20 +159,28 @@ if __name__ == '__main__':
     import pymongo
 
     n = 4
-    myclient = pymongo.MongoClient("mongodb://192.168.0.61:37017")
-    db = myclient["tibetan"]
-    start = time.time()
-    word_pool = [x['word'] for x in db['word_stat_dict'].find({'type': 'used'})]
-    # 加入已经确认的新词
-    for x in db['self_dict'].find({'is_check': True}):
-        word_pool.append(x['word'])
-    word_pool.sort(key=lambda i: len(i), reverse=True)
-    u = Tokenize(word_pool=word_pool)
-    source = '''
-    ཡུལ་སྐད། ཡིག་སྐད། འགྱོ། འགྲོ། འདེ། འདི་རེད། དུ་རེ། དེ་རེད། ཧོས་ན། ཕ་རོལ།
-    '''
+    # myclient = pymongo.MongoClient("mongodb://192.168.0.61:37017")
+    # db = myclient["tibetan"]
+    # start = time.time()
+    # word_pool = [x['word'] for x in db['word_stat_dict'].find({'type': 'used'})]
+    # # 加入已经确认的新词
+    # for x in db['self_dict'].find({'is_check': True}):
+    #     word_pool.append(x['word'])
+    # word_pool.sort(key=lambda i: len(i), reverse=True)
+    # u = Tokenize(word_pool=word_pool)
+    # source = '''
+    # བཅོམ་ལྡན་འདས་ཀྱི་ཡེ་ཤེས་རྒྱས་པའི་མདོ་སྡེ་རིན་པོ་ཆེ་མཐའ་ཡས་པ་མཐར་ཕྱིན་པ་ཞེས་བྱ་བ་ཐེག་པ་ཆེན་པོའི་མདོ [51a][51a.1]རབ་ཏུ་མཁྱེན་ཅེ་ནང་། མཐོང་བ་ནས་མཁས་པའི་བར་གང་ཡིན་པ་འདི་ནི་ཟང་ཟིང་དང་བཅས་པའི་ཁམས་ཤེས་པ་[51a.2]ཞེས་བྱ་སྟེ། དེ་དེ་བཞིན་གཤེགས་པས་ཡང་དག་པ་ཇི་ལྟ་བ་བཞིནབཅོམ་ལྡན་འདས་དཔག་ཏུ་མེད་པ་རྣམས་[51a.4]ལ་དགེ་བའི་རྩ་བ་བསྐྱེད་ནས།།ཟང་ཟིང་དང་དང་བཅས་པའི་ཁམས་ཤེས་པ་ཀུན་འབྱུང་བ་ཤེས་པ་ཡང་དག་པར་འགྲུབ་དང་བཅས་པའི་ཁམས་[51a.5]ཤེས་པ་ཀུན་འབྱུང་བ་ཤེས་པ་ཡང་དག་པར་འགྲུབ་པའི་རྒྱུ་དེ་དང་རྐྱེན་དེ་དག་ཡང་དག་པ་ཇི་ལྟ་བ་བཞིན་རབ་ཏུ་མཁྱེན་ཏེ། གལེས་པ་[51a.6]ཀུན་འབྱུང་བ་ཤེས་པ་དེ་ལ་ཡང་ཞུ་བ་ཞུས་པ་ན། བསྐལ་བར་ལན་གསུང་བ་ནས། དེ་བཞིན་དུ་སྦྱར་ཏེ་དེ་ནི་ཙན་དན་གྱི་ཁྱམས་དང་ཁང་བཟངས་ཀྱི་བར་འདི་ལ་ལོངས་སྤྱོད་པར་འགྱུར་རོ།།ཁྱིམ་བདག་ཇི་ལྟར་ན་དེ་བཞིན་གཤེགས་པས་ཟང་ཟིང་དང་བཅས་པའི་ཁམས་ཤེས་པ་འགོག་པ་ཤེས་[51a.7]
+    # '''
     # with open('./test.txt','r') as f:
     #     source = f.read()
-    print(time.time() - start)
-    print(u.run(source, []))
-    print(time.time() - start)
+    text = '''
+    བཅོམ་ལྡན་འདས་ཀྱི་ཡེ་ཤེས་
+རྒྱས་པའི་མདོ་སྡེ་རིན་པོ་
+ཆེ་མཐའ་ཡས་པ་མཐར་ཕྱིན་པ་ཞ
+ེས་བྱ་བ་ཐེག་པ་ཆེན་པོའི་མ
+དོ
+    '''
+    print(text.replace('\n',''))
+    # print(time.time() - start)
+    # print(u.run(source, []))
+    # print(time.time() - start)
