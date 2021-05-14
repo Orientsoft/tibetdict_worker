@@ -145,7 +145,7 @@ class Tokenize:
         # 1.结果将(空格་) 替换为་空格
         text_result = text_result.replace(u" ་", "་ ")
         # 特殊字符处理
-        for i in ['།།','།','༑','[','༼','༽',']']:
+        for i in ['།།','།','༑','[','༼','༽',']','༄','༅']:
             text_result = text_result.replace(i,f' {i} ')
         # 2.结果将多空格替换为单空格
         text_result = re.sub(' +', ' ', text_result)
