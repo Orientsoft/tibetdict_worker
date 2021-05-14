@@ -2,10 +2,11 @@
 from typing import List
 import time
 import re
+import string
 
 
 class Tokenize:
-    flags_head = [' ', ']', u']', u'་', u'།',u'.']
+    flags_head = [' ', ']', u']', u'་', u'།', u'.']
     flags_head_byte = [160]
 
     flags_last_0 = [u'་', u'འི་', u'འུ་', u'འོ་', u'ས་', u'ར་']
@@ -110,7 +111,7 @@ class Tokenize:
             # 结束点
             _end = _begin + len(_word)
             # 词性
-            _string_buffer.insert(0,f" {_word} {text[_end:_last]}")
+            _string_buffer.insert(0, f" {_word} {text[_end:_last]}")
 
             _last = _begin
 
@@ -145,8 +146,10 @@ class Tokenize:
         # 1.结果将(空格་) 替换为་空格
         text_result = text_result.replace(u" ་", "་ ")
         # 特殊字符处理
-        for i in ['།།','།','༑','[','༼','༽',']','༄','༅']:
-            text_result = text_result.replace(i,f' {i} ')
+        for i in ['།།', '།', '༑', '[', '༼', '༽', ']', '༄', '༅', '༡', '༢', '༣', '༤', '༥', '༦', '༧', '༨', '༩', '༠']:
+            text_result = text_result.replace(i, f' {i} ')
+        for i in string.ascii_letters + string.digits:
+            text_result = text_result.replace(i, f' {i} ')
         # 2.结果将多空格替换为单空格
         text_result = re.sub(' +', ' ', text_result)
         # # 3.若空格前不是点则加入@
@@ -181,7 +184,7 @@ if __name__ == '__main__':
 ེས་བྱ་བ་ཐེག་པ་ཆེན་པོའི་མ
 དོ
     '''
-    print(text.replace('\n',''))
+    print(text.replace('\n', ''))
     # print(time.time() - start)
     # print(u.run(source, []))
     # print(time.time() - start)
