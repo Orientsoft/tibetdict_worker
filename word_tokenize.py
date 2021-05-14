@@ -139,6 +139,7 @@ class Tokenize:
         return source
 
     def run(self, source: str, del_content: List):
+        source = source.encode('utf-8').decode('utf-8-sig')
         source = self.pre_deal(source, del_content)
         text_result = self.text_count(source)
         # 1.结果将(空格་) 替换为་空格

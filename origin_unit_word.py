@@ -86,7 +86,7 @@ class UnitStat:
                         _last_flag_0 = text[_end:_check_end_0]
                         _last_flag_1 = text[_end:_check_end_1]
 
-                        _check_begin = text[_begin - 1]  if _begin > 0 else ' '
+                        _check_begin = text[_begin - 1] if _begin > 0 else ' '
                         # 如果该词的前部分是]等特殊，且后部分为特殊的几个词。则也计入词频
                         if (ord(_check_begin) in self.flags_head_byte) and (
                                 _last_flag_0 in self.flags_last_0 or _last_flag_1 in self.flags_last_1):
@@ -130,7 +130,7 @@ class UnitStat:
     def text_count(self, text: str):
         start = time.time()
         _begin_list, _begin_word, _word_in_pool = self.find_word(text)
-        print("找词所花时间：",time.time()-start)
+        print("找词所花时间：", time.time() - start)
         _word_count_map = {}  # {'some':{'word':'some','nature':'','count':1,''}}
         _string_buffer = []
 
@@ -147,7 +147,7 @@ class UnitStat:
             # 词性
             _nature = _word_in_pool[_word][1]
             # 不能用字符串相加，随着字符串变长，会越来越慢
-            _string_buffer.insert(0,f"[{_word_in_pool[_word][0]}]{text[_end:_last]}")
+            _string_buffer.insert(0, f"[{_word_in_pool[_word][0]}]{text[_end:_last]}")
 
             if _word in _word_count_map:
                 _count_row = _word_count_map[_word]
@@ -164,7 +164,7 @@ class UnitStat:
 
         _string_buffer.insert(0, text[:_last])
         result_text = ''.join(_string_buffer)
-        print("组装结束所花时间：",time.time()-start)
+        print("组装结束所花时间：", time.time() - start)
 
         return _word_count_map.values(), result_text
 
@@ -186,6 +186,7 @@ class UnitStat:
         return source
 
     def run(self, source: str, del_content: List):
+        source = source.encode('utf-8').decode('utf-8-sig')
         source = self.pre_deal(source, del_content)
 
         count_result, text_result = self.text_count(source)
@@ -278,7 +279,7 @@ if __name__ == '__main__':
                                                   {'$project': {'_id': 0, 'id': 1, 'word': 1, 'nature': 1,
                                                                 'length': {'$strLenCP': "$word"}}},
                                                   {'$sort': {'length': -1}}
-                                                  ])
+                                                  ], allowDiskUse=True)
     # word_pool = mydb['word_stat_dict'].find({'type': 'stat', 'is_exclude': False})
     result = []
 
@@ -312,9 +313,9 @@ if __name__ == '__main__':
     print(time.time() - start)
     u = UnitStat(word_pool=word_pool)
 
-    source = '''ཡུལ་སྐད།ཡིག་སྐད།འགྱོ།འགྲོ།འདེ།འདི་རེད།དུ་རེ།དེ་རེད།ཧོས་ན།ཕ་རོལ།གཤིས་འུ།གཤིས་ཀི།
-    '''
-    # with open('./test.txt','r') as f:
-    #     source = f.read()
-    print(u.run(source,[]))
+    # source = '''ཡུལ་སྐད།ཡིག་སྐད།འགྱོ།འགྲོ།འདེ།འདི་རེད།དུ་རེ།དེ་རེད།ཧོས་ན།ཕ་རོལ།གཤིས་འུ།གཤིས་ཀི།
+    # '''
+    with open('/Users/wangbilin/Downloads/测试_zhang.txt', 'r') as f:
+        source = f.read()
+    print(u.run(source, []))
     print(time.time() - start)

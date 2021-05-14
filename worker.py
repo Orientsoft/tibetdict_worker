@@ -75,9 +75,6 @@ def get_stat_pool(db):
 
 def get_used_pool(db):
     word_dict_list = [x['word'] for x in db['word_stat_dict'].find({'type': 'used'})]
-    # 加入已经确认的新词
-    for x in db['self_dict'].find({'is_check': True}):
-        word_dict_list.append(x['word'])
     word_dict_list.sort(key=lambda i: len(i), reverse=True)
     return word_dict_list
 
@@ -97,6 +94,7 @@ def origin_calc(work_id: str):
     rd = OperateRedis().conn_redis()
     cache = rd.get(pool_key)
     if not cache:
+        # 词频统计，词频统计词库，新词发现：已有词库+用户自己的词库
         word_pool = get_stat_pool(db) if data['work_type'] == 'stat' else get_used_pool(db)
         rd.set(pool_key, json.dumps(word_pool, ensure_ascii=False), 3600 * 3600)
     else:
@@ -109,6 +107,11 @@ def origin_calc(work_id: str):
         # notify request
         notify_result(work_id=work_id, result=result, context=tmp_text, calc_type='origin')
     elif data['work_type'] == 'new':
+        # 加入用户自己发现的词
+        for x in db['self_dict'].find({'is_check': True, 'user_id': data['user_id']}):
+            word_pool.append(x['word'])
+        word_pool = list(set(word_pool))
+        word_pool.sort(key=lambda i: len(i), reverse=True)
         n = NewWord(word_pool)
         try:
             result = n.run(origin.decode('utf-8'), DEL_CONTENT)
