@@ -10,6 +10,7 @@ class NewWord:
     def word_format(word):
         if not word:
             return ''
+        word = word.replace('་་','་')
         if word[-1] not in ['།', '་']:
             return f'{word[:-1]}་'
         else:

@@ -13,6 +13,8 @@ class Tokenize:
     flags_last_1 = [u'།', u'འི།', u'འུ།', u'འོ།', u'ས།', u'ར།']
     # flags_last_2 = [u'འི', u'འུ', u'འོ', u'ས', u'ར']
     flags_last_3 = [u'འི', u'འུ', u'འོ']
+    TOKENIZE_CHAR = ['།།', '།', '༑', '[', '༼', '༽', ']', '༄', '༅', '༡', '༢', '༣', '༤', '༥', '༦', '༧', '༨', '༩', '༠',
+                     '?', '.', '*']
 
     def __init__(self, word_pool: List):
         self.word_pool = word_pool
@@ -146,7 +148,7 @@ class Tokenize:
         # 1.结果将(空格་) 替换为་空格
         text_result = text_result.replace(u" ་", "་ ")
         # 特殊字符处理
-        for i in ['།།', '།', '༑', '[', '༼', '༽', ']', '༄', '༅', '༡', '༢', '༣', '༤', '༥', '༦', '༧', '༨', '༩', '༠']:
+        for i in self.TOKENIZE_CHAR:
             text_result = text_result.replace(i, f' {i} ')
         for i in string.ascii_letters + string.digits:
             text_result = text_result.replace(i, f' {i} ')
@@ -179,10 +181,10 @@ if __name__ == '__main__':
     #     source = f.read()
     text = '''
     བཅོམ་ལྡན་འདས་ཀྱི་ཡེ་ཤེས་
-རྒྱས་པའི་མདོ་སྡེ་རིན་པོ་
-ཆེ་མཐའ་ཡས་པ་མཐར་ཕྱིན་པ་ཞ
-ེས་བྱ་བ་ཐེག་པ་ཆེན་པོའི་མ
-དོ
+        རྒྱས་པའི་མདོ་སྡེ་རིན་པོ་
+        ཆེ་མཐའ་ཡས་པ་མཐར་ཕྱིན་པ་ཞ
+        ེས་བྱ་བ་ཐེག་པ་ཆེན་པོའི་མ
+        དོ
     '''
     print(text.replace('\n', ''))
     # print(time.time() - start)
